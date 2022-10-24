@@ -1,6 +1,6 @@
 import { Grid } from "@mui/material";
-import { Product } from "../app/models/product";
-import ProductCard from "./catalog/ProductCard";
+import { Product } from "../../app/models/product";
+import ProductCard from "./ProductCard";
 
 interface Props {
     products: Product[];
