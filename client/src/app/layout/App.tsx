@@ -19,6 +19,7 @@ import { fetchBasketAsync } from "../../features/basket/basketSlice";
 import Login from "../../features/account/Login";
 import Register from "../../features/account/Register";
 import { fetchCurrentUser } from "../../features/account/accountSlice";
+import Orders from "../../features/orders/Orders";
 
 function App() {
   // const {setBasket} = useStoreContext();
@@ -86,6 +87,7 @@ function App() {
           <Route path='/basket' element={<BasketPage />} />
           <Route element={<RequireAuth />}>
             <Route path='/checkout' element={<CheckoutPage />} />
+            <Route path='/orders' element={<Orders />} />
           </Route>
           <Route path='/login' element={<Login />} />
           <Route path='/register' element={<Register />} />
