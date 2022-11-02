@@ -12,9 +12,9 @@ const responseBody = (response: AxiosResponse) => response.data;
 
 axios.interceptors.request.use(config => {
     const token = store.getState().account.user?.token;
-    if (token) 
+    if (token)
         config.headers!.Authorization = `Bearer ${token}`;
-    
+
     return config;
 })
 
@@ -31,7 +31,7 @@ axios.interceptors.response.use(async response => {
 
     return response
 }, (error: AxiosError) => {
-    const { data,  status }: { data: any, status: number } = error.response!;
+    const { data, status }: { data: any, status: number } = error.response!;
 
     switch (status) {
         case 400:
@@ -46,12 +46,16 @@ axios.interceptors.response.use(async response => {
 
                 throw modelStateErrors.flat();
             }
-            
+
             toast.error(data.title);
             break;
 
         case 401:
             toast.error(data.title);
+            break;
+
+        case 403:
+            toast.error('You are not allowed to do that');
             break;
 
         case 500:
@@ -67,10 +71,36 @@ axios.interceptors.response.use(async response => {
 })
 
 const requests = {
-    get: (url: string, params?: URLSearchParams) => axios.get(url, {params}).then(responseBody),
+    get: (url: string, params?: URLSearchParams) => axios.get(url, { params }).then(responseBody),
     post: (url: string, body: {}) => axios.post(url, body).then(responseBody),
     put: (url: string, body: {}) => axios.put(url, body).then(responseBody),
     delete: (url: string) => axios.delete(url).then(responseBody),
+    postForm: (url: string, data: FormData) => axios.post(url, data, {
+        headers: {
+            'Content-type': 'multipart/form-data'
+        }
+    }).then(responseBody),
+    putForm: (url: string, data: FormData) => axios.post(url, data, {
+        headers: {
+            'Content-type': 'multipart/form-data'
+        }
+    }).then(responseBody)
+}
+
+function createFormData(item: any) {
+    let formData = new FormData();
+
+    for (const key in item) {
+        formData.append(key, item[key])
+    }
+
+    return formData;
+}
+
+const Admin = {
+    createProduct: (product: any) => requests.postForm('products', createFormData(product)),
+    updateProduct: (product: any) => requests.putForm('products', createFormData(product)),
+    deleteProduct: (id: number) => requests.delete(`products/${id}`)
 }
 
 const Catalog = {
@@ -111,6 +141,7 @@ const Payments = {
 }
 
 const agent = {
+    Admin,
     Catalog,
     TestErrors,
     Basket,

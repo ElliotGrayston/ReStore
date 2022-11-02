@@ -1,7 +1,7 @@
 import { Container, createTheme, CssBaseline, ThemeProvider } from "@mui/material";
 import { useCallback, useEffect, useState } from "react";
 import { Navigate, Outlet, Route, Routes, useLocation } from "react-router-dom";
-import { ToastContainer } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import AboutPage from "../../features/about/AboutPage";
 import Catalog from "../../features/catalog/Catalog";
 import ProductDetails from "../../features/catalog/ProductDetails";
@@ -20,6 +20,7 @@ import Register from "../../features/account/Register";
 import { fetchCurrentUser } from "../../features/account/accountSlice";
 import Orders from "../../features/orders/Orders";
 import CheckoutWrapper from "../../features/checkout/CheckoutWrapper";
+import Inventory from "../../features/admin/Inventory";
 
 function App() {
   // const {setBasket} = useStoreContext();
@@ -54,10 +55,14 @@ function App() {
     setDarkMode(!darkMode);
   }
 
-  function RequireAuth() {
+  interface Props {
+    roles?: string[];
+  }
+
+  function RequireAuth({ roles }: Props) {
     const { user } = useAppSelector(state => state.account);
     let location = useLocation();
-  
+
     if (!user) {
       // Redirect them to the /login page, but save the current location they were
       // trying to go to when they were redirected. This allows us to send them
@@ -65,7 +70,13 @@ function App() {
       // than dropping them off on the home page.
       return <Navigate to="/login" state={{ from: location }} />;
     }
-  
+
+    if (roles && !roles?.some(r => user.roles?.includes(r))) {
+      toast.error('Not authorised to access this area');
+
+      return <Navigate to={{ pathname: "/catalog" }} />
+    }
+
     return <Outlet />;
   }
 
@@ -85,9 +96,10 @@ function App() {
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/server-error" element={<ServerError />} />
           <Route path='/basket' element={<BasketPage />} />
-          <Route element={<RequireAuth />}>
+          <Route element={<RequireAuth roles={['Admin']} />}>
             <Route path='/checkout' element={<CheckoutWrapper />} />
             <Route path='/orders' element={<Orders />} />
+            <Route path='/inventory' element={<Inventory />} />
           </Route>
           <Route path='/login' element={<Login />} />
           <Route path='/register' element={<Register />} />
